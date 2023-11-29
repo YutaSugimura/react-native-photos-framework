@@ -1,9 +1,6 @@
 import NativeApi from './index';
-import Asset from './asset';
 import uuidGenerator from './uuid-generator';
-import changeObserverHandler, {
-    assetArrayObserverHandler
-} from './change-observer-handler';
+import { assetArrayObserverHandler } from './change-observer-handler';
 import EventEmitter from '../event-emitter';
 
 

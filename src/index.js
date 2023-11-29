@@ -1,9 +1,8 @@
-import ReactPropTypes from "prop-types";
 import { NativeEventEmitter, NativeModules, Platform } from "react-native";
-import Asset from "./asset";
-import Album from "./album";
-import AlbumQueryResult from "./album-query-result";
+import AlbumQueryResultBase from './album-query-result-base';
 import AlbumQueryResultCollection from "./album-query-result-collection";
+import Album from "./album";
+import { collectionArrayObserverHandler } from './change-observer-handler';
 import EventEmitter from "../event-emitter";
 import ImageAsset from "./image-asset";
 import VideoAsset from "./video-asset";
@@ -17,6 +16,44 @@ if (!RNPFManager && Platform.OS === "ios") {
     );
 }
 export const eventEmitter = new EventEmitter();
+
+// AlbumQueryResult
+export class AlbumQueryResult extends AlbumQueryResultBase {
+    constructor(obj, fetchParams, eventEmitter) {
+        super();
+        this.eventEmitter = eventEmitter;
+        this._fetchParams = fetchParams || {};
+        Object.assign(this, obj);
+        this._albumNativeObjs = this.albums;
+        this.albums = this
+            ._albumNativeObjs
+            .map(albumObj => new Album(albumObj, this._fetchParams.assetFetchOptions,
+                eventEmitter));
+        eventEmitter.addListener('onObjectChange', (changeDetails) => {
+            if (this._cacheKey === changeDetails._cacheKey) {
+                this.emit('onChange', changeDetails, (callback) => {
+                    this.applyChangeDetails(changeDetails, callback);
+                }, this);
+            }
+        });
+    }
+
+    stopTracking() {
+        return NativeApi.stopTracking(this._cacheKey);
+    }
+
+    applyChangeDetails(changeDetails, callback) {
+        return collectionArrayObserverHandler(changeDetails, this.albums, (
+            nativeObj) => {
+            return new Album(nativeObj, this._fetchParams.fetchOptions,
+                this.eventEmitter);
+        }).then((albums) => {
+            this.albums = albums;
+            callback && callback(this);
+        });
+    }
+}
+
 
 // Main JS-implementation Most methods are written to handle array of input
 // operations.

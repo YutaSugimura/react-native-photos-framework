@@ -1,5 +1,4 @@
 import Asset from './asset';
-import NativeApi from './index';
 
 export default class VideoAsset extends Asset {
     constructor(assetObj, options) {
