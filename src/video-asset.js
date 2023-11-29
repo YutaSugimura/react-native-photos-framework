@@ -1,4 +1,4 @@
-import Asset from './asset';
+import Asset from './index';
 
 export default class VideoAsset extends Asset {
     constructor(assetObj, options) {

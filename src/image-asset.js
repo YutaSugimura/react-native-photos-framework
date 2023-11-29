@@ -1,4 +1,4 @@
-import Asset from './asset';
+import Asset from './index';
 
 export default class ImageAsset extends Asset {
     constructor(assetObj, options) {
